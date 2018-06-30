@@ -236,7 +236,7 @@ function destroy() {
 function provision() {
     # If INFRA_PREFIX has not been set yet, request it from user
     if [ -z "$INFRA_PREFIX" ]; then
-        DEFAULT_INFRA_PREFIX=$(LC_ALL=C tr -dc 'a-z0-9' < /dev/urandom | fold -w 5 | head -n 1)
+        DEFAULT_INFRA_PREFIX=$(LC_ALL=C tr -dc 'a-z' < /dev/urandom | fold -w 5 | head -n 1)
 
         warnb << EOF
 # Infrastructure Prefix
@@ -333,6 +333,7 @@ EOF
         # Backend config only!
         {
             echo "region = \"$region\""
+            #echo "prefix = \"$INFRA_PREFIX\""
             echo "bucket = \"${INFRA_PREFIX}-$bucket\""
             echo "dynamodb_table = \"${INFRA_PREFIX}-$dynamo_table\""
             echo "key = \"terraform.tfstate\""
@@ -340,8 +341,6 @@ EOF
         # Other configuration needs to go in main.tfvars or init will break
         {
             echo "region = \"$region\""
-            echo "bucket = \"$bucket\""
-            echo "dynamodb_table = \"$dynamo_table\""
             echo "key_name = \"$KEY_PAIR\""
             echo "prefix = \"$INFRA_PREFIX\""
             echo "secret_key_base = \"$SECRET_KEY_BASE\""
@@ -355,7 +354,7 @@ EOF
         # shellcheck disable=SC2086
         terraform init -backend-config=backend.tfvars setup
         # shellcheck disable=SC2086
-        terraform plan -out plans/setup.planfile setup
+        terraform plan -var-file=backend.tfvars -var-file=main.tfvars -out plans/setup.planfile setup
 
         if [ "$DRY_RUN" == "false" ]; then
             # No need to show the plan, it has already been displayed
@@ -397,7 +396,7 @@ EOF
     terraform init -backend-config=backend.tfvars -var-file=main.tfvars main
     # Generate the plan for the remaining infra
     # shellcheck disable=SC2086
-    terraform plan -var-file=main.tfvars -out plans/main.planfile main
+    terraform plan -var-file=backend.tfvars -var-file=main.tfvars -out plans/main.planfile main
     if [ "$SKIP_APPROVAL" == "false" ]; then
         read -r -p "Take a moment to review the generated plan, and press ENTER to continue"
     fi

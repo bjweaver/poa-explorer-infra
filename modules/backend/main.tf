@@ -2,7 +2,7 @@
 resource "aws_s3_bucket" "terraform_state" {
   count = "${var.bootstrap}"
 
-  bucket = "${var.prefix}-${var.bucket}"
+  bucket = "${var.bucket}"
   acl    = "private"
 
   versioning {
@@ -28,7 +28,7 @@ resource "aws_s3_bucket" "terraform_state" {
 resource "aws_dynamodb_table" "terraform_statelock" {
   count = "${var.bootstrap}"
 
-  name           = "${var.prefix}-${var.dynamodb_table}"
+  name           = "${var.dynamodb_table}"
   read_capacity  = 1
   write_capacity = 1
   hash_key       = "LockID"

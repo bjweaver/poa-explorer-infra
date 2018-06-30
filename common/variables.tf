@@ -8,7 +8,7 @@ variable "dynamodb_table" {
 
 variable "region" {
   description = "The AWS region to use"
-  default     = "us-east-2"
+  default     = "us-west-2"
 }
 
 variable "prefix" {
